@@ -30,7 +30,6 @@ internal struct RectFramer {
     topLeft = CGPointMake(minX, midY)
     bottomLeft = origin
   }
-  
 }
 
 class ViewController: UIViewController {
@@ -68,24 +67,48 @@ class ViewController: UIViewController {
   internal func drawLineIn(withRectRef rectRef: RectFramer) {
     let refView = rectRef.viewRef
     
-    let bezPath: UIBezierPath = UIBezierPath()
-    bezPath.moveToPoint(rectRef.bottomLeft)
-    bezPath.addLineToPoint(rectRef.bottomRight)
-    bezPath.addLineToPoint(rectRef.topRight)
     
-    //  bezPath.addLineToPoint(topLeft) // straight line
+    let bezPathStage0: UIBezierPath = UIBezierPath()
+    bezPathStage0.moveToPoint(rectRef.bottomLeft)
+    bezPathStage0.addLineToPoint(rectRef.bottomRight)
+    bezPathStage0.addLineToPoint(rectRef.topRight)
+    bezPathStage0.addLineToPoint(rectRef.topLeft) // straight line
     //  bezPath.addQuadCurveToPoint(topLeft, controlPoint: CGPointMake(midX, minY)) // gentle convex curve at top line of rect
-    bezPath.addQuadCurveToPoint(rectRef.topLeft, controlPoint: CGPointMake(rectRef.midX, rectRef.maxY)) // gentle concave curve of top line of rect
-    bezPath.closePath()
+//    bezPath.addQuadCurveToPoint(rectRef.topLeft, controlPoint: CGPointMake(rectRef.midX, rectRef.maxY)) // gentle concave curve of top line of rect
+//    bezPathStage0.addQuadCurveToPoint(rectRef.topLeft, controlPoint: CGPointMake(rectRef.minX, rectRef.minY))
+    bezPathStage0.closePath()
+    
+    let bezPathStage1: UIBezierPath = UIBezierPath()
+    bezPathStage1.moveToPoint(rectRef.bottomLeft)
+    bezPathStage1.addLineToPoint(rectRef.bottomRight)
+    bezPathStage1.addLineToPoint(rectRef.topRight)
+    bezPathStage1.addQuadCurveToPoint(rectRef.topLeft, controlPoint: CGPointMake(rectRef.minX, rectRef.minY)) // top left control point
+    bezPathStage1.closePath()
+    
+    let bezPathStage2: UIBezierPath = UIBezierPath()
+    bezPathStage2.moveToPoint(rectRef.bottomLeft)
+    bezPathStage2.addLineToPoint(rectRef.bottomRight)
+    bezPathStage2.addLineToPoint(rectRef.topRight)
+    bezPathStage2.addQuadCurveToPoint(rectRef.topLeft, controlPoint: CGPointMake(rectRef.midX, rectRef.minY)) // top middle control point
+    bezPathStage2.closePath()
+    
+    let bezPathStage3: UIBezierPath = UIBezierPath()
+    bezPathStage3.moveToPoint(rectRef.bottomLeft)
+    bezPathStage3.addLineToPoint(rectRef.bottomRight)
+    bezPathStage3.addLineToPoint(rectRef.topRight)
+    bezPathStage3.addQuadCurveToPoint(rectRef.topLeft, controlPoint: CGPointMake(rectRef.maxX, rectRef.minY)) // top right control point
+    bezPathStage3.closePath()
     
     let drawingLayer = CAShapeLayer()
-    drawingLayer.path = bezPath.CGPath
+    drawingLayer.path = bezPathStage0.CGPath
     drawingLayer.strokeColor = Knoll.CGColor
     drawingLayer.fillColor = UIColor.clearColor().CGColor
     drawingLayer.lineWidth = 4.0
     
     refView.layer.addSublayer(drawingLayer)
   }
+  
+  // MARK - Bezier Points
   
   
   // MARK: - Layout
