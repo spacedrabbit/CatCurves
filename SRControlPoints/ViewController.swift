@@ -73,9 +73,6 @@ class ViewController: UIViewController {
     bezPathStage0.addLineToPoint(rectRef.bottomRight)
     bezPathStage0.addLineToPoint(rectRef.topRight)
     bezPathStage0.addLineToPoint(rectRef.topLeft) // straight line
-    //  bezPath.addQuadCurveToPoint(topLeft, controlPoint: CGPointMake(midX, minY)) // gentle convex curve at top line of rect
-//    bezPath.addQuadCurveToPoint(rectRef.topLeft, controlPoint: CGPointMake(rectRef.midX, rectRef.maxY)) // gentle concave curve of top line of rect
-//    bezPathStage0.addQuadCurveToPoint(rectRef.topLeft, controlPoint: CGPointMake(rectRef.minX, rectRef.minY))
     bezPathStage0.closePath()
     
     let bezPathStage1: UIBezierPath = UIBezierPath()
@@ -99,12 +96,46 @@ class ViewController: UIViewController {
     bezPathStage3.addQuadCurveToPoint(rectRef.topLeft, controlPoint: CGPointMake(rectRef.maxX, rectRef.minY)) // top right control point
     bezPathStage3.closePath()
     
+    let bezPathStage4: UIBezierPath = bezPathStage0
+    
+    let animStage0: CABasicAnimation = CABasicAnimation(keyPath: "path")
+    animStage0.fromValue = bezPathStage0.CGPath
+    animStage0.toValue = bezPathStage1.CGPath
+    animStage0.beginTime = 0.0
+    animStage0.duration = 1.0
+    
+    let animStage1: CABasicAnimation = CABasicAnimation(keyPath: "path")
+    animStage1.fromValue = bezPathStage1.CGPath
+    animStage1.toValue = bezPathStage2.CGPath
+    animStage1.beginTime = animStage0.beginTime + animStage0.duration
+    animStage1.duration =  animStage0.duration
+
+    let animStage2: CABasicAnimation = CABasicAnimation(keyPath: "path")
+    animStage2.fromValue = bezPathStage2.CGPath
+    animStage2.toValue = bezPathStage3.CGPath
+    animStage2.beginTime = animStage1.beginTime + animStage1.duration
+    animStage2.duration = animStage0.duration
+    
+    let animStage3: CABasicAnimation = CABasicAnimation(keyPath: "path")
+    animStage3.fromValue = bezPathStage3.CGPath
+    animStage3.toValue = bezPathStage4.CGPath
+    animStage3.beginTime = animStage2.beginTime + animStage2.duration
+    animStage3.duration = animStage0.duration
+    
     let drawingLayer = CAShapeLayer()
     drawingLayer.path = bezPathStage0.CGPath
     drawingLayer.strokeColor = Knoll.CGColor
     drawingLayer.fillColor = UIColor.clearColor().CGColor
     drawingLayer.lineWidth = 4.0
+
+    let waveAnimGroup: CAAnimationGroup = CAAnimationGroup()
+    waveAnimGroup.animations = [animStage0, animStage1, animStage2, animStage3]
+    waveAnimGroup.duration = animStage3.beginTime + animStage3.duration
+    waveAnimGroup.fillMode = kCAFillModeForwards
+    waveAnimGroup.removedOnCompletion = false
+    waveAnimGroup.repeatCount = Float.infinity
     
+    drawingLayer.addAnimation(waveAnimGroup, forKey: "wavePath")
     refView.layer.addSublayer(drawingLayer)
   }
   
