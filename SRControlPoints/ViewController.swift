@@ -38,6 +38,8 @@ class ViewController: UIViewController {
   // MARK: - Variables
   let Oatmeal: UIColor = UIColor(red: 255.0/255.0, green: 240.0/255.0, blue: 165.0/255.0, alpha: 1.0)
   let Knoll: UIColor = UIColor(red: 70.0/255.0, green: 137.0/255.0, blue: 102.0/255.0, alpha: 1.0)
+  let KnollFill: UIColor = UIColor(red: 190.0/255.0, green: 235.0/255.0, blue: 159.0/255.0, alpha: 1.0)
+  
   var sizingToken: dispatch_once_t = 0
   
   // MARK: - View Lifecycle
@@ -67,7 +69,7 @@ class ViewController: UIViewController {
   internal func drawLineIn(withRectRef rectRef: RectFramer) {
     let refView = rectRef.viewRef
     
-    
+    // wave crest anims
     let bezPathStage0: UIBezierPath = UIBezierPath()
     bezPathStage0.moveToPoint(rectRef.bottomLeft)
     bezPathStage0.addLineToPoint(rectRef.bottomRight)
@@ -86,7 +88,7 @@ class ViewController: UIViewController {
     bezPathStage2.moveToPoint(rectRef.bottomLeft)
     bezPathStage2.addLineToPoint(rectRef.bottomRight)
     bezPathStage2.addLineToPoint(rectRef.topRight)
-    bezPathStage2.addQuadCurveToPoint(rectRef.topLeft, controlPoint: CGPointMake(rectRef.midX, rectRef.minY)) // top middle control point
+    bezPathStage2.addQuadCurveToPoint(rectRef.topLeft, controlPoint: CGPointMake(rectRef.midX, rectRef.minY - (rectRef.viewRef.frame.size.height / 2.0))) // top middle control point
     bezPathStage2.closePath()
     
     let bezPathStage3: UIBezierPath = UIBezierPath()
@@ -97,6 +99,30 @@ class ViewController: UIViewController {
     bezPathStage3.closePath()
     
     let bezPathStage4: UIBezierPath = bezPathStage0
+    
+    // wave trough anims
+    let bezPathStage5: UIBezierPath = UIBezierPath()
+    bezPathStage5.moveToPoint(rectRef.bottomLeft)
+    bezPathStage5.addLineToPoint(rectRef.bottomRight)
+    bezPathStage5.addLineToPoint(rectRef.topRight)
+    bezPathStage5.addQuadCurveToPoint(rectRef.topLeft, controlPoint: CGPointMake(rectRef.maxX, rectRef.maxY)) // bottom right control point
+    bezPathStage5.closePath()
+    
+    let bezPathStage6: UIBezierPath = UIBezierPath()
+    bezPathStage6.moveToPoint(rectRef.bottomLeft)
+    bezPathStage6.addLineToPoint(rectRef.bottomRight)
+    bezPathStage6.addLineToPoint(rectRef.topRight)
+    bezPathStage6.addQuadCurveToPoint(rectRef.topLeft, controlPoint: CGPointMake(rectRef.midX, rectRef.maxY + (rectRef.viewRef.frame.size.height / 2.0))) // bottom right control point
+    bezPathStage6.closePath()
+    
+    let bezPathStage7: UIBezierPath = UIBezierPath()
+    bezPathStage7.moveToPoint(rectRef.bottomLeft)
+    bezPathStage7.addLineToPoint(rectRef.bottomRight)
+    bezPathStage7.addLineToPoint(rectRef.topRight)
+    bezPathStage7.addQuadCurveToPoint(rectRef.topLeft, controlPoint: CGPointMake(rectRef.minX, rectRef.maxY)) // bottom right control point
+    bezPathStage7.closePath()
+    
+    let bezPathStage8: UIBezierPath = bezPathStage0
     
     let animStage0: CABasicAnimation = CABasicAnimation(keyPath: "path")
     animStage0.fromValue = bezPathStage0.CGPath
@@ -122,20 +148,44 @@ class ViewController: UIViewController {
     animStage3.beginTime = animStage2.beginTime + animStage2.duration
     animStage3.duration = animStage0.duration
     
+    let animStage4: CABasicAnimation = CABasicAnimation(keyPath: "path")
+    animStage4.fromValue = bezPathStage4.CGPath
+    animStage4.toValue = bezPathStage5.CGPath
+    animStage4.beginTime = animStage3.beginTime + animStage3.duration
+    animStage4.duration = animStage0.duration
+    
+    let animStage5: CABasicAnimation = CABasicAnimation(keyPath: "path")
+    animStage5.fromValue = bezPathStage5.CGPath
+    animStage5.toValue = bezPathStage6.CGPath
+    animStage5.beginTime = animStage4.beginTime + animStage4.duration
+    animStage5.duration = animStage0.duration
+    
+    let animStage6: CABasicAnimation = CABasicAnimation(keyPath: "path")
+    animStage6.fromValue = bezPathStage6.CGPath
+    animStage6.toValue = bezPathStage7.CGPath
+    animStage6.beginTime = animStage5.beginTime + animStage5.duration
+    animStage6.duration = animStage0.duration
+    
+    let animStage7: CABasicAnimation = CABasicAnimation(keyPath: "path")
+    animStage7.fromValue = bezPathStage7.CGPath
+    animStage7.toValue = bezPathStage8.CGPath
+    animStage7.beginTime = animStage6.beginTime + animStage6.duration
+    animStage7.duration = animStage0.duration
+    
     let drawingLayer = CAShapeLayer()
     drawingLayer.path = bezPathStage0.CGPath
     drawingLayer.strokeColor = Knoll.CGColor
-    drawingLayer.fillColor = UIColor.clearColor().CGColor
+    drawingLayer.fillColor = KnollFill.CGColor
     drawingLayer.lineWidth = 4.0
 
     let waveAnimGroup: CAAnimationGroup = CAAnimationGroup()
-    waveAnimGroup.animations = [animStage0, animStage1, animStage2, animStage3]
-    waveAnimGroup.duration = animStage3.beginTime + animStage3.duration
+    waveAnimGroup.animations = [animStage0, animStage1, animStage2, animStage3, animStage4, animStage5, animStage6, animStage7]
+    waveAnimGroup.duration = animStage7.beginTime + animStage7.duration
     waveAnimGroup.fillMode = kCAFillModeForwards
     waveAnimGroup.removedOnCompletion = false
     waveAnimGroup.repeatCount = Float.infinity
     
-    drawingLayer.addAnimation(waveAnimGroup, forKey: "wavePath")
+    drawingLayer.addAnimation(waveAnimGroup, forKey: "waveCrest")
     refView.layer.addSublayer(drawingLayer)
   }
   
